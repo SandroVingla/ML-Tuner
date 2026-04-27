@@ -1,0 +1,34 @@
+package com.metronomelist.tuner
+
+import android.Manifest
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import com.metronomelist.tuner.ui.TunerScreen
+
+class TunerActivity : ComponentActivity() {
+
+    private val micPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* permissão tratada na UI */ }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Solicita permissão de microfone ao iniciar
+        micPermission.launch(Manifest.permission.RECORD_AUDIO)
+
+        setContent {
+            MaterialTheme {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    TunerScreen()
+                }
+            }
+        }
+    }
+}
