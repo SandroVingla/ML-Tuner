@@ -15,7 +15,7 @@ O projeto nasceu como parte do **Metronome List Studio**, reunindo metrônomo e 
 ## Screenshot
 
 <p align="center">
-  <img src="screenshot.png"  width="200"/>
+  <img src="screenshot.png"  width="800"/>
 </p>
 
 ## Layout
