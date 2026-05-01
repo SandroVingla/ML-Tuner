@@ -1,0 +1,201 @@
+# ML-T1 — Chromatic Tuner
+
+> Afinador cromático analógico para Android, inspirado no clássico Boss TU-12H dos anos 80/90.
+
+---
+
+## Sobre o projeto
+
+O **ML-T1** é um afinador cromático para Android desenvolvido com Jetpack Compose. O visual foi projetado para recriar a sensação de um equipamento físico vintage — display âmbar, ponteiro analógico, painel bege envelhecido e LEDs de notas — tudo renderizado em código, sem imagens externas.
+
+O projeto nasceu como parte do **Metronome List Studio**, reunindo metrônomo e afinador na mesma família de ferramentas musicais acessíveis.
+
+---
+
+## Visual
+
+```
+┌──────────────────────────────────────────────┐
+│  [ DISPLAY ÂMBAR ]   │  PITCH  415 430 432   │
+│                       │        435 440 444    │
+│   ponteiro analógico  │  C  D  E  F  G  A  B │
+│   escala em cents     │                       │
+│   badge CENT          │  [PITCH][DOWN][ UP ]  │
+│                       │                       │
+│   ◄   ●   ►           │  OFF  L-GUITAR H-CHR  │
+│  IN       OUT         │       ML-T1           │
+└──────────────────────────────────────────────┘
+```
+
+---
+
+## Funcionalidades
+
+- **Detecção de pitch em tempo real** via microfone usando o algoritmo YIN
+- **Ponteiro analógico animado** com física de mola (spring animation)
+- **Modo L — Guitar**: detecta e filtra apenas as notas das cordas padrão (E A D G B E)
+- **Modo H — Chromatic**: detecta todas as 12 notas cromáticas
+- **6 referências de A4**: 415 · 430 · 432 · 435 · 440 · 444 Hz
+- **LEDs de nota** animados (C D E F G A B ♯)
+- **Setas direcionais** indicando se a nota está baixa, alta ou afinada
+- **LED BATT** indica se o afinador está ativo
+- **Splash screen vintage** com animação do ponteiro saindo da esquerda e centralizando
+- **Orientação landscape** para melhor aproveitamento do layout
+
+---
+
+## Arquitetura
+
+```
+com.metronomelist.tuner/
+│
+├── screen/
+│   └── SplashActivity.kt       # Splash animado estilo CRT vintage
+│
+├── TunerActivity.kt            # Activity principal com pedido de permissão
+│
+├── engine/
+│   ├── TunerEngine.kt          # Gerencia AudioRecord + loop de captura
+│   ├── YinPitchDetector.kt     # Algoritmo YIN de detecção de pitch
+│   └── NoteDetector.kt         # Converte frequência → nota + cents
+│
+└── ui/
+    ├── TunerViewModel.kt       # Estado da UI + lógica de negócio
+    ├── TunerScreen.kt          # Composable principal (painel esquerdo + direito)
+    └── TunerDisplay.kt         # Display âmbar com ponteiro animado
+```
+
+### Camadas
+
+| Camada | Responsabilidade |
+|--------|-----------------|
+| `engine` | Captura de áudio, YIN, conversão freq→nota. Sem dependência de UI. |
+| `ui/ViewModel` | Mantém o `TunerUiState`, expõe eventos, controla `TunerEngine`. |
+| `ui/Screen` | Renderiza o estado via Compose. Sem lógica de negócio. |
+| `screen` | Splash screen independente, navega para `TunerActivity`. |
+
+---
+
+## Algoritmo YIN
+
+A detecção de pitch utiliza o algoritmo **YIN** (de Cheveigné & Kawahara, 2002), portado diretamente do afinador web ML-T1:
+
+1. **Função de diferença** — calcula a autocorrelação diferencial do sinal
+2. **Normalização cumulativa** — reduz bias para valores de tau pequenos
+3. **Threshold** — primeiro mínimo abaixo de `0.10` é considerado o pitch
+4. **Interpolação parabólica** — refinamento sub-sample para maior precisão
+
+```kotlin
+// Threshold conservador para qualidade de detecção
+private val threshold: Float = 0.10f
+
+// Faixa de detecção: 50 Hz (< E2) a 1400 Hz (> F6)
+private val minHz: Float = 50f
+private val maxHz: Float = 1400f
+```
+
+---
+
+## Modos de operação
+
+| Modo | Slider | Comportamento |
+|------|--------|--------------|
+| **OFF** | posição 1 | Microfone desligado, ponteiro em repouso (-20 cents) |
+| **L** | posição 2 | Filtra apenas E · A · D · G · B — ideal para afinar guitarra e violão corda a corda |
+| **H** | posição 3 | Cromático completo — detecta qualquer nota, ideal para voz e instrumentos melódicos |
+
+---
+
+## Referências de afinação
+
+| Hz | Nome | Contexto |
+|----|------|---------|
+| 415 | Barroco | Música antiga e barroca |
+| 430 | Histórico | Referência histórica europeia |
+| 432 | Natural | Alternativa popular contemporânea |
+| 435 | Antigo | Padrão pré-ISO |
+| **440** | **Padrão ISO** | **Referência moderna universal** |
+| 444 | Moderno | Timbre mais brilhante |
+
+---
+
+## Requisitos
+
+| Item | Versão |
+|------|--------|
+| Android SDK mínimo | 26 (Android 8.0 Oreo) |
+| Target SDK | 35 (Android 15) |
+| Compile SDK | 35 |
+| Kotlin | 2.x (plugin Compose) |
+| Jetpack Compose BOM | 2024.09.00 |
+| Permissão obrigatória | `RECORD_AUDIO` |
+| Hardware obrigatório | Microfone |
+
+---
+
+## Como executar
+
+```bash
+# Clone o repositório
+git clone https://github.com/SandroVingla/ML-Tuner.git
+
+# Abra no Android Studio (Hedgehog ou superior)
+# Conecte um dispositivo Android ou inicie um emulador com microfone
+# Clique em Run ▶
+```
+
+> **Atenção:** o emulador de microfone do Android Studio pode ter latência alta. Para melhor experiência, use um dispositivo físico.
+
+---
+
+## Permissões
+
+```xml
+<uses-permission android:name="android.permission.RECORD_AUDIO"/>
+<uses-feature android:name="android.hardware.microphone" android:required="true"/>
+```
+
+O app solicita a permissão de microfone ao iniciar. Sem ela, o afinador não consegue capturar áudio.
+
+---
+
+## Dependências principais
+
+```groovy
+// Jetpack Compose
+implementation platform('androidx.compose:compose-bom:2024.09.00')
+implementation 'androidx.compose.ui:ui'
+implementation 'androidx.compose.foundation:foundation'
+implementation 'androidx.compose.material3:material3'
+implementation 'androidx.compose.animation:animation'
+
+// Lifecycle + ViewModel
+implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4'
+implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.8.4'
+
+// Coroutines (loop de áudio em background)
+implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+```
+
+---
+
+## Inspiração
+
+O design visual é uma homenagem ao **Boss TU-12H Chromatic Tuner** — um equipamento icônico dos anos 80/90 que marcou a geração de músicos que não tiveram acesso a ele na época. O ML-T1 recria essa experiência de forma gratuita, acessível e nativa no Android.
+
+---
+
+## Projeto web
+
+O ML-T1 também existe como afinador web no **Metronome List Studio**:
+
+🔗 [metronome-list.netlify.app/tuner.html](https://metronome-list.netlify.app/tuner.html)
+
+O algoritmo YIN utilizado neste app Android foi portado diretamente do JavaScript do afinador web.
+
+---
+
+## Licença
+
+Este projeto é de uso pessoal e educacional.
+© 2026 Metronome List Studio · Sandro Vingla
