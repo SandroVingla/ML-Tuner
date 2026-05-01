@@ -12,7 +12,11 @@ O projeto nasceu como parte do **Metronome List Studio**, reunindo metrônomo e 
 
 ---
 
-## Visual
+## Screenshot
+
+![ML-T1 Chromatic Tuner](screenshot.png)
+
+## Layout
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -198,4 +202,4 @@ O algoritmo YIN utilizado neste app Android foi portado diretamente do JavaScrip
 ## Licença
 
 Este projeto é de uso pessoal e educacional.
-© 2026 Metronome List Studio · Sandro Vingla
+© 2026 Metronome List · Sandro Vingla
