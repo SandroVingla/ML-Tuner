@@ -1,29 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.metronomelist.tuner">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Permissão de microfone para detecção de pitch -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-feature android:name="android.hardware.microphone" android:required="true"/>
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="ML-T1 Tuner"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MLTuner">
 
+        <!-- Splash — launcher principal -->
         <activity
-            android:name=".TunerActivity"
+            android:name=".SplashActivity"
             android:exported="true"
             android:screenOrientation="landscape"
-            android:label="@string/app_name">
+            android:theme="@style/Theme.MLTuner">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- Tela principal -->
+        <activity
+            android:name=".TunerActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.MLTuner"/>
 
     </application>
 </manifest>

@@ -10,14 +10,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 
+enum class PowerMode { OFF, L, H }
+
 data class TunerUiState(
     val isRunning:   Boolean    = false,
-    val isPowered:   Boolean    = true,
+    val isPowered:   Boolean    = false,  // ← começa desligado
+    val powerMode:   PowerMode  = PowerMode.OFF,  // ← começa em OFF
     val note:        String?    = null,
     val cents:       Float      = -20f,
     val frequency:   Float      = 0f,
     val pitchRef:    Int        = 440,
-    val statusText:  String     = "Aguardando sinal...",
+    val statusText:  String     = "Desligue e ligue para iniciar",
     val showHzMenu:  Boolean    = false
 )
 
@@ -31,8 +34,37 @@ class TunerViewModel : ViewModel() {
     private val engine = TunerEngine { result -> onEngineResult(result) }
 
     init {
-        // Liga automaticamente ao criar o ViewModel
-        startTuner()
+        // ← não inicia automaticamente — espera o usuário ligar o slider
+        setHz(440)
+    }
+
+    fun setPowerMode(mode: PowerMode) {
+        _uiState.value = _uiState.value.copy(powerMode = mode)
+        when (mode) {
+            PowerMode.OFF -> {
+                _uiState.value = _uiState.value.copy(
+                    isPowered  = false,
+                    note       = null,
+                    cents      = -20f,
+                    statusText = "Desligado"
+                )
+                stopTuner()
+            }
+            PowerMode.L -> {
+                _uiState.value = _uiState.value.copy(
+                    isPowered  = true,
+                    statusText = "Modo L — cordas E A D G B E"
+                )
+                startTuner()
+            }
+            PowerMode.H -> {
+                _uiState.value = _uiState.value.copy(
+                    isPowered  = true,
+                    statusText = "Modo H — cromático"
+                )
+                startTuner()
+            }
+        }
     }
 
     fun setPowered(on: Boolean) {
@@ -70,21 +102,26 @@ class TunerViewModel : ViewModel() {
     }
 
     private fun onEngineResult(result: NoteResult?) {
+        val mode = _uiState.value.powerMode
         if (result == null) {
             _uiState.value = _uiState.value.copy(
                 cents      = -20f,
                 note       = null,
                 statusText = "Aguardando sinal..."
             )
-        } else {
-            _uiState.value = _uiState.value.copy(
-                note       = result.name,
-                cents      = result.cents,
-                frequency  = result.frequency,
-                statusText = "${result.name} — ${"%.1f".format(result.frequency)} Hz  " +
-                        "${if (result.cents >= 0) "+" else ""}${"%.0f".format(result.cents)} cents"
-            )
+            return
         }
+        // Modo L — só mostra notas de corda de guitarra/baixo
+        val guitarNotes = setOf("E", "A", "D", "G", "B")
+        if (mode == PowerMode.L && result.name !in guitarNotes) return
+
+        _uiState.value = _uiState.value.copy(
+            note       = result.name,
+            cents      = result.cents,
+            frequency  = result.frequency,
+            statusText = "${result.name} — ${"%.1f".format(result.frequency)} Hz  " +
+                    "${if (result.cents >= 0) "+" else ""}${"%.0f".format(result.cents)} cents"
+        )
     }
     var pitchRef: Int = 440
     fun cyclePitch() {

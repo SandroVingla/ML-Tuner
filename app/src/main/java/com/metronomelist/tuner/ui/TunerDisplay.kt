@@ -56,8 +56,9 @@ fun TunerDisplay(
         needleAngle.animateTo(
             targetValue = centsToAngle(cents),
             animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness    = Spring.StiffnessMedium
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                //stiffness    = Spring.StiffnessMediumLow --essa linha deixa a agulha mais rapida
+                stiffness    = Spring.StiffnessLow //--essa linha deixa a agulha mais lenta
             )
         )
     }
