@@ -1,4 +1,4 @@
-package com.metronomelist.tuner.ui
+package com.metronomelist.tuner.app.ui
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -375,17 +375,17 @@ private fun PowerSlider(powerMode: PowerMode, onChanged: (PowerMode) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(42.dp)
         ) {
             Text("  OFF ", fontSize = 7.sp, color = TextMid)
-           /* Canvas(modifier = Modifier.size(width = 28.dp, height = 10.dp)) {
-                val y   = size.height / 2f
-                val yUp = size.height * 0.15f
-                drawLine(Color(0xFF3A2C10), Offset(0f,  y),   Offset(5f,  y),   1.2f)
-                drawLine(Color(0xFF3A2C10), Offset(5f,  y),   Offset(5f,  yUp), 1.2f)
-                drawLine(Color(0xFF3A2C10), Offset(5f,  yUp), Offset(12f, yUp), 1.2f)
-                drawLine(Color(0xFF3A2C10), Offset(12f, yUp), Offset(12f, y),   1.2f)
-                drawLine(Color(0xFF3A2C10), Offset(12f, y),   Offset(18f, y),   1.2f)
-                drawLine(Color(0xFF3A2C10), Offset(18f, y),   Offset(18f, yUp), 1.2f)
-                drawLine(Color(0xFF3A2C10), Offset(18f, yUp), Offset(28f, yUp), 1.2f)
-            }*/
+            /* Canvas(modifier = Modifier.size(width = 28.dp, height = 10.dp)) {
+                 val y   = size.height / 2f
+                 val yUp = size.height * 0.15f
+                 drawLine(Color(0xFF3A2C10), Offset(0f,  y),   Offset(5f,  y),   1.2f)
+                 drawLine(Color(0xFF3A2C10), Offset(5f,  y),   Offset(5f,  yUp), 1.2f)
+                 drawLine(Color(0xFF3A2C10), Offset(5f,  yUp), Offset(12f, yUp), 1.2f)
+                 drawLine(Color(0xFF3A2C10), Offset(12f, yUp), Offset(12f, y),   1.2f)
+                 drawLine(Color(0xFF3A2C10), Offset(12f, y),   Offset(18f, y),   1.2f)
+                 drawLine(Color(0xFF3A2C10), Offset(18f, y),   Offset(18f, yUp), 1.2f)
+                 drawLine(Color(0xFF3A2C10), Offset(18f, yUp), Offset(28f, yUp), 1.2f)
+             }*/
             Text("L - GUITAR        H - CHROMATIC", fontSize = 7.sp, color = TextMid)
         }
         Spacer(Modifier.height(3.dp))

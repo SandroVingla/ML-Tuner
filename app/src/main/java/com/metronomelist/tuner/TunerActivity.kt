@@ -1,4 +1,4 @@
-package com.metronomelist.tuner
+package com.metronomelist.tuner.app
 
 import android.Manifest
 import android.os.Bundle
@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.metronomelist.tuner.ui.TunerScreen
+import com.metronomelist.tuner.app.ui.TunerScreen
 
 class TunerActivity : ComponentActivity() {
 

@@ -1,4 +1,4 @@
-package com.metronomelist.tuner.engine
+package com.metronomelist.tuner.app.engine
 
 import kotlin.math.log2
 import kotlin.math.round

@@ -12,9 +12,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MLTuner">
 
-        <!-- Splash — launcher principal -->
         <activity
-            android:name=".SplashActivity"
+            android:name=".screen.SplashActivity"
             android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.MLTuner">
@@ -24,7 +23,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Tela principal -->
         <activity
             android:name=".TunerActivity"
             android:exported="false"

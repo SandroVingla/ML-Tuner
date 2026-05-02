@@ -1,9 +1,9 @@
-package com.metronomelist.tuner.ui
+package com.metronomelist.tuner.app.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.metronomelist.tuner.engine.NoteResult
-import com.metronomelist.tuner.engine.TunerEngine
+import com.metronomelist.tuner.app.engine.NoteResult
+import com.metronomelist.tuner.app.engine.TunerEngine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
