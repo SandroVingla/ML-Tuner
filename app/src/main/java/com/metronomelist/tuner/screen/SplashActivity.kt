@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
@@ -36,13 +37,18 @@ import kotlin.math.sin
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             MaterialTheme {
                 SplashScreen {
-                    startActivity(Intent(this, TunerActivity::class.java))
-                    finish()
+                    // Garante navegação mesmo se Activity estiver sendo destruída
+                    if (!isFinishing && !isDestroyed) {
+                        startActivity(Intent(this, TunerActivity::class.java))
+                        finish()
+                    }
                 }
             }
         }
@@ -57,7 +63,7 @@ fun SplashScreen(onFinished: () -> Unit) {
     LaunchedEffect(Unit) {
         delay(250)
         needleAngle.animateTo(
-            targetValue  = 0f,
+            targetValue   = 0f,
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioLowBouncy,
                 stiffness    = Spring.StiffnessLow
@@ -74,19 +80,20 @@ fun SplashScreen(onFinished: () -> Unit) {
     Box(
         modifier         = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0D0D0D)),
+            .background(Color(0xFF0D0D0D))
+            .windowInsetsPadding(WindowInsets.systemBars),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Display âmbar
+            // Display âmbar animado
             Canvas(modifier = Modifier.size(width = 224.dp, height = 164.dp)) {
-                val w  = size.width
-                val h  = size.height
-                val px = w * 0.5f
-                val py = h * 0.90f
+                val w    = size.width
+                val h    = size.height
+                val px   = w * 0.5f
+                val py   = h * 0.90f
                 val maxR = py - h * 0.04f
 
                 // Moldura
@@ -96,14 +103,10 @@ fun SplashScreen(onFinished: () -> Unit) {
                     cornerRadius = CornerRadius(6f)
                 )
 
-                // Fundo âmbar radial
+                // Fundo âmbar
                 drawRoundRect(
                     brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFFC85800),
-                            Color(0xFF8B3A00),
-                            Color(0xFF4A1800)
-                        ),
+                        colors = listOf(Color(0xFFC85800), Color(0xFF8B3A00), Color(0xFF4A1800)),
                         center = Offset(px, h * 0.68f),
                         radius = h * 0.85f
                     ),
@@ -140,7 +143,7 @@ fun SplashScreen(onFinished: () -> Unit) {
 
                 // Ticks
                 listOf(-40f, -25f, -10f, 0f, 10f, 25f, 40f).forEach { cent ->
-                    val theta  = Math.toRadians((-90.0 + (cent / 50.0) * 82.0))
+                    val theta  = Math.toRadians(-90.0 + (cent / 50.0) * 82.0)
                     val outerR = maxR * 0.88f
                     val innerR = if (cent == 0f) maxR * 0.72f else maxR * 0.78f
                     drawLine(
@@ -158,21 +161,20 @@ fun SplashScreen(onFinished: () -> Unit) {
                 drawCircle(Color(0xFFBB5500), radius = maxR * 0.013f, center = Offset(px, py))
 
                 // Agulha animada
-                val angle = needleAngle.value
-                val rad   = Math.toRadians((90.0 + (angle / 50.0) * 82.0))
-                val cosA  = cos(rad).toFloat()
-                val sinA  = sin(rad).toFloat()
-                val baseR = maxR * 0.06f
-                val tipR  = maxR * 0.88f
-                val base  = Offset(px + baseR * cosA, py + baseR * sinA)
-                val tip   = Offset(px - tipR  * cosA, py - tipR  * sinA)
-
-                drawLine(Color(0xFFF0E8D0), base, tip, maxR * 0.010f, cap = StrokeCap.Round)
-
+                val angle   = needleAngle.value
+                val rad     = Math.toRadians(90.0 + (angle / 50.0) * 82.0)
+                val cosA    = cos(rad).toFloat()
+                val sinA    = sin(rad).toFloat()
+                val baseR   = maxR * 0.06f
+                val tipR    = maxR * 0.88f
+                val base    = Offset(px + baseR * cosA, py + baseR * sinA)
+                val tip     = Offset(px - tipR  * cosA, py - tipR  * sinA)
                 val tw      = maxR * 0.032f
                 val perpCos = cos(rad + Math.PI / 2).toFloat()
                 val perpSin = sin(rad + Math.PI / 2).toFloat()
                 val tipFar  = Offset(px - (tipR + maxR * 0.065f) * cosA, py - (tipR + maxR * 0.065f) * sinA)
+
+                drawLine(Color(0xFFF0E8D0), base, tip, maxR * 0.010f, cap = StrokeCap.Round)
                 drawPath(
                     Path().apply {
                         moveTo(tipFar.x, tipFar.y)
@@ -204,7 +206,8 @@ fun SplashScreen(onFinished: () -> Unit) {
             Spacer(Modifier.height(8.dp))
             Box(
                 modifier = Modifier
-                    .width(130.dp).height(1.dp)
+                    .width(130.dp)
+                    .height(1.dp)
                     .background(
                         Brush.horizontalGradient(
                             listOf(Color.Transparent, Color(0xFF5A3A10), Color.Transparent)

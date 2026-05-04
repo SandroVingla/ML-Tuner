@@ -43,10 +43,13 @@ private val NOTE_NAMES = listOf("C","D","E","F","G","A","B")
 fun TunerScreen(vm: TunerViewModel = viewModel()) {
     val state by vm.uiState.collectAsState()
 
+    // WindowInsets garante que o conteúdo não fique atrás
+    // da barra de navegação em nenhum dispositivo
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF1A1A1A))
+            .windowInsetsPadding(WindowInsets.systemBars)
             .padding(8.dp)
     ) {
         Row(
@@ -57,7 +60,7 @@ fun TunerScreen(vm: TunerViewModel = viewModel()) {
                 .background(Color(0xFF1A1A1A))
                 .border(2.dp, Color(0xFF0E0E0E), RoundedCornerShape(8.dp))
         ) {
-            // Painel esquerdo
+            // ── Painel esquerdo — display âmbar ──
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -76,16 +79,16 @@ fun TunerScreen(vm: TunerViewModel = viewModel()) {
 
                 // Faixa inferior IN/OUT com setas
                 val arrowLeftColor = when {
-                    state.note == null       -> Color(0xFF3A3A3A)
-                    state.cents < -5f        -> Color(0xFFFFCC00)
-                    state.cents in -5f..5f   -> Color(0xFF30CC10)
-                    else                     -> Color(0xFF3A3A3A)
+                    state.note == null     -> Color(0xFF3A3A3A)
+                    state.cents < -5f      -> Color(0xFFFFCC00)
+                    state.cents in -5f..5f -> Color(0xFF30CC10)
+                    else                   -> Color(0xFF3A3A3A)
                 }
                 val arrowRightColor = when {
-                    state.note == null       -> Color(0xFF3A3A3A)
-                    state.cents > 5f         -> Color(0xFFFFCC00)
-                    state.cents in -5f..5f   -> Color(0xFF30CC10)
-                    else                     -> Color(0xFF3A3A3A)
+                    state.note == null     -> Color(0xFF3A3A3A)
+                    state.cents > 5f       -> Color(0xFFFFCC00)
+                    state.cents in -5f..5f -> Color(0xFF30CC10)
+                    else                   -> Color(0xFF3A3A3A)
                 }
                 val animLeftColor  by animateColorAsState(arrowLeftColor,  tween(120), label = "arrowL")
                 val animRightColor by animateColorAsState(arrowRightColor, tween(120), label = "arrowR")
@@ -99,13 +102,12 @@ fun TunerScreen(vm: TunerViewModel = viewModel()) {
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Canvas(modifier = Modifier.size(22.dp, 18.dp)) {
-                        val path = Path().apply {
+                        drawPath(Path().apply {
                             moveTo(0f, size.height / 2f)
                             lineTo(size.width, 0f)
                             lineTo(size.width, size.height)
                             close()
-                        }
-                        drawPath(path, color = animLeftColor)
+                        }, color = animLeftColor)
                     }
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -143,18 +145,17 @@ fun TunerScreen(vm: TunerViewModel = viewModel()) {
                     }
 
                     Canvas(modifier = Modifier.size(22.dp, 18.dp)) {
-                        val path = Path().apply {
+                        drawPath(Path().apply {
                             moveTo(size.width, size.height / 2f)
                             lineTo(0f, 0f)
                             lineTo(0f, size.height)
                             close()
-                        }
-                        drawPath(path, color = animRightColor)
+                        }, color = animRightColor)
                     }
                 }
             }
 
-            // Painel direito
+            // ── Painel direito — controles ──
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -193,17 +194,10 @@ private fun TopStrip(state: TunerUiState, vm: TunerViewModel) {
             modifier          = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // PITCH label
-            Text(
-                "PITCH",
-                fontSize     = 8.sp,
-                fontWeight   = FontWeight.Bold,
-                color        = TextDark,
-                letterSpacing = 0.8.sp
-            )
+            Text("PITCH", fontSize = 8.sp, fontWeight = FontWeight.Bold,
+                color = TextDark, letterSpacing = 0.8.sp)
             Spacer(Modifier.width(6.dp))
 
-            // LEDs + números numa coluna cada
             Row(
                 modifier              = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -217,29 +211,22 @@ private fun TopStrip(state: TunerUiState, vm: TunerViewModel) {
                     )
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.clickable { vm.setHz(hz) }
+                        modifier            = Modifier.clickable { vm.setHz(hz) }
                     ) {
                         Box(
                             modifier = Modifier
-                                .width(32.dp)
-                                .height(16.dp)
+                                .width(32.dp).height(16.dp)
                                 .clip(RoundedCornerShape(2.dp))
                                 .background(ledColor)
                                 .border(0.8.dp, Color(0xFF5A2A10), RoundedCornerShape(2.dp))
                         )
                         Spacer(Modifier.height(2.dp))
-                        Text(
-                            text      = "$hz",
-                            fontSize  = 7.sp,
-                            color     = TextMid,
-                            textAlign = TextAlign.Center,
-                            modifier  = Modifier.width(32.dp)
-                        )
+                        Text(text = "$hz", fontSize = 7.sp, color = TextMid,
+                            textAlign = TextAlign.Center, modifier = Modifier.width(32.dp))
                     }
                 }
             }
 
-            // BATT
             Spacer(Modifier.width(6.dp))
             Text("BATT.", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = TextDark)
             Spacer(Modifier.width(4.dp))
@@ -248,8 +235,7 @@ private fun TopStrip(state: TunerUiState, vm: TunerViewModel) {
             )
             Box(
                 modifier = Modifier
-                    .size(12.dp)
-                    .clip(CircleShape)
+                    .size(12.dp).clip(CircleShape)
                     .background(battColor)
                     .border(1.dp, Color(0xFF5A4020), CircleShape)
             )
@@ -327,11 +313,7 @@ private fun MainArea(state: TunerUiState, vm: TunerViewModel, modifier: Modifier
                 TunerButton("UP",    onClick = vm::pitchUp)
             }
             Spacer(Modifier.height(8.dp))
-            // ← corrigido: passa powerMode e setPowerMode
-            PowerSlider(
-                powerMode = state.powerMode,
-                onChanged = vm::setPowerMode
-            )
+            PowerSlider(powerMode = state.powerMode, onChanged = vm::setPowerMode)
         }
         Spacer(Modifier.weight(1f))
         Column(
@@ -375,17 +357,6 @@ private fun PowerSlider(powerMode: PowerMode, onChanged: (PowerMode) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(42.dp)
         ) {
             Text("  OFF ", fontSize = 7.sp, color = TextMid)
-            /* Canvas(modifier = Modifier.size(width = 28.dp, height = 10.dp)) {
-                 val y   = size.height / 2f
-                 val yUp = size.height * 0.15f
-                 drawLine(Color(0xFF3A2C10), Offset(0f,  y),   Offset(5f,  y),   1.2f)
-                 drawLine(Color(0xFF3A2C10), Offset(5f,  y),   Offset(5f,  yUp), 1.2f)
-                 drawLine(Color(0xFF3A2C10), Offset(5f,  yUp), Offset(12f, yUp), 1.2f)
-                 drawLine(Color(0xFF3A2C10), Offset(12f, yUp), Offset(12f, y),   1.2f)
-                 drawLine(Color(0xFF3A2C10), Offset(12f, y),   Offset(18f, y),   1.2f)
-                 drawLine(Color(0xFF3A2C10), Offset(18f, y),   Offset(18f, yUp), 1.2f)
-                 drawLine(Color(0xFF3A2C10), Offset(18f, yUp), Offset(28f, yUp), 1.2f)
-             }*/
             Text("L - GUITAR        H - CHROMATIC", fontSize = 7.sp, color = TextMid)
         }
         Spacer(Modifier.height(3.dp))

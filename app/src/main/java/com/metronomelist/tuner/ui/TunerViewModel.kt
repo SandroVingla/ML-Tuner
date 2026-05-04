@@ -9,156 +9,155 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-
 enum class PowerMode { OFF, L, H }
 
 data class TunerUiState(
-    val isRunning:   Boolean    = false,
-    val isPowered:   Boolean    = false,  // ← começa desligado
-    val powerMode:   PowerMode  = PowerMode.OFF,  // ← começa em OFF
-    val note:        String?    = null,
-    val cents:       Float      = -20f,
-    val frequency:   Float      = 0f,
-    val pitchRef:    Int        = 440,
-    val statusText:  String     = "Desligue e ligue para iniciar",
-    val showHzMenu:  Boolean    = false
+    val isRunning:  Boolean   = false,
+    val isPowered:  Boolean   = false,
+    val powerMode:  PowerMode = PowerMode.OFF,
+    val note:       String?   = null,
+    val cents:      Float     = -20f,
+    val frequency:  Float     = 0f,
+    val pitchRef:   Int       = 440,
+    val statusText: String    = "Deslize para iniciar",
+    val showHzMenu: Boolean   = false
 )
 
 val PITCH_PRESETS = listOf(415, 430, 432, 435, 440, 444)
+
+// Notas válidas no modo L (guitarra/violão)
+private val GUITAR_NOTES = setOf("E", "A", "D", "G", "B")
 
 class TunerViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(TunerUiState())
     val uiState: StateFlow<TunerUiState> = _uiState.asStateFlow()
 
+    // Engine criada uma única vez — callback na main thread
     private val engine = TunerEngine { result -> onEngineResult(result) }
 
     init {
-        // ← não inicia automaticamente — espera o usuário ligar o slider
-        setHz(440)
+        // Garante que o engine já inicia com a referência correta
+        engine.pitchRef = _uiState.value.pitchRef
     }
+
+    // ── Power / Modo ─────────────────────────────────────────────────────
 
     fun setPowerMode(mode: PowerMode) {
-        _uiState.value = _uiState.value.copy(powerMode = mode)
         when (mode) {
             PowerMode.OFF -> {
-                _uiState.value = _uiState.value.copy(
-                    isPowered  = false,
-                    note       = null,
-                    cents      = -20f,
-                    statusText = "Desligado"
-                )
-                stopTuner()
+                update {
+                    copy(
+                        powerMode  = PowerMode.OFF,
+                        isPowered  = false,
+                        note       = null,
+                        cents      = -20f,
+                        statusText = "Desligado"
+                    )
+                }
+                stopEngine()
             }
             PowerMode.L -> {
-                _uiState.value = _uiState.value.copy(
-                    isPowered  = true,
-                    statusText = "Modo L — cordas E A D G B E"
-                )
-                startTuner()
+                update {
+                    copy(
+                        powerMode  = PowerMode.L,
+                        isPowered  = true,
+                        statusText = "Modo L — E  A  D  G  B  E"
+                    )
+                }
+                startEngine()
             }
             PowerMode.H -> {
-                _uiState.value = _uiState.value.copy(
-                    isPowered  = true,
-                    statusText = "Modo H — cromático"
-                )
-                startTuner()
+                update {
+                    copy(
+                        powerMode  = PowerMode.H,
+                        isPowered  = true,
+                        statusText = "Modo H — Cromático"
+                    )
+                }
+                startEngine()
             }
         }
     }
 
-    fun setPowered(on: Boolean) {
-        _uiState.value = _uiState.value.copy(
-            isPowered  = on,
-            cents      = if (!on) -20f else _uiState.value.cents,
-            note       = if (!on) null else _uiState.value.note,
-            statusText = if (on) "Aguardando sinal..." else "Desligado"
-        )
-        if (on) startTuner() else stopTuner()
+    // ── Pitch ────────────────────────────────────────────────────────────
+
+    fun setHz(hz: Int) {
+        engine.pitchRef = hz                       // atualiza engine imediatamente
+        update { copy(pitchRef = hz, statusText = "Referência: $hz Hz") }
     }
 
-    fun toggleMic() {
-        if (engine.isRunning) stopTuner() else startTuner()
-    }
-
-    private fun startTuner() {
-        engine.pitchRef = _uiState.value.pitchRef
-        engine.start()
-        _uiState.value = _uiState.value.copy(
-            isRunning  = true,
-            isPowered  = true,
-            statusText = "Aguardando sinal..."
-        )
-    }
-
-    private fun stopTuner() {
-        engine.stop()
-        _uiState.value = _uiState.value.copy(
-            isRunning  = false,
-            cents      = -20f,
-            note       = null,
-            statusText = "Microfone desativado"
-        )
-    }
-
-    private fun onEngineResult(result: NoteResult?) {
-        val mode = _uiState.value.powerMode
-        if (result == null) {
-            _uiState.value = _uiState.value.copy(
-                cents      = -20f,
-                note       = null,
-                statusText = "Aguardando sinal..."
-            )
-            return
-        }
-        // Modo L — só mostra notas de corda de guitarra/baixo
-        val guitarNotes = setOf("E", "A", "D", "G", "B")
-        if (mode == PowerMode.L && result.name !in guitarNotes) return
-
-        _uiState.value = _uiState.value.copy(
-            note       = result.name,
-            cents      = result.cents,
-            frequency  = result.frequency,
-            statusText = "${result.name} — ${"%.1f".format(result.frequency)} Hz  " +
-                    "${if (result.cents >= 0) "+" else ""}${"%.0f".format(result.cents)} cents"
-        )
-    }
-    var pitchRef: Int = 440
     fun cyclePitch() {
-        val idx = PITCH_PRESETS.indexOf(pitchRef)
+        val idx  = PITCH_PRESETS.indexOf(_uiState.value.pitchRef)
         val next = PITCH_PRESETS[(idx + 1) % PITCH_PRESETS.size]
         setHz(next)
     }
 
     fun pitchUp() {
-        val idx = PITCH_PRESETS.indexOf(pitchRef)
-        if (idx < PITCH_PRESETS.size - 1) {
-            setHz(PITCH_PRESETS[idx + 1])
-        }
+        val idx = PITCH_PRESETS.indexOf(_uiState.value.pitchRef)
+        if (idx < PITCH_PRESETS.size - 1) setHz(PITCH_PRESETS[idx + 1])
     }
 
     fun pitchDown() {
-        val idx = PITCH_PRESETS.indexOf(pitchRef)
-        if (idx > 0) {
-            setHz(PITCH_PRESETS[idx - 1])
-        }
-    }
-
-    fun setHz(hz: Int) {
-        pitchRef = hz
-        engine.pitchRef = hz
-        _uiState.value = _uiState.value.copy(
-            pitchRef   = hz,
-            statusText = "Referência: $hz Hz"
-        )
+        val idx = PITCH_PRESETS.indexOf(_uiState.value.pitchRef)
+        if (idx > 0) setHz(PITCH_PRESETS[idx - 1])
     }
 
     fun toggleHzMenu() {
-        _uiState.value = _uiState.value.copy(showHzMenu = !_uiState.value.showHzMenu)
+        update { copy(showHzMenu = !showHzMenu) }
     }
+
+    // ── Engine ───────────────────────────────────────────────────────────
+
+    private fun startEngine() {
+        engine.pitchRef = _uiState.value.pitchRef
+        engine.start()
+        update { copy(isRunning = true, statusText = "Aguardando sinal...") }
+    }
+
+    private fun stopEngine() {
+        engine.stop()
+        update { copy(isRunning = false, cents = -20f, note = null) }
+    }
+
+    private fun onEngineResult(result: NoteResult?) {
+        if (result == null) {
+            update { copy(cents = -20f, note = null, statusText = "Aguardando sinal...") }
+            return
+        }
+
+        // Modo L — ignora notas que não são cordas de guitarra/violão
+        val mode = _uiState.value.powerMode
+        if (mode == PowerMode.L && result.name !in GUITAR_NOTES) return
+
+        update {
+            copy(
+                note       = result.name,
+                cents      = result.cents,
+                frequency  = result.frequency,
+                statusText = buildStatusText(result)
+            )
+        }
+    }
+
+    // ── Lifecycle ────────────────────────────────────────────────────────
 
     override fun onCleared() {
         super.onCleared()
         engine.stop()
+    }
+
+    // ── Utils ────────────────────────────────────────────────────────────
+
+    /** Atualiza o estado de forma segura na viewModelScope */
+    private fun update(block: TunerUiState.() -> TunerUiState) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.block()
+        }
+    }
+
+    private fun buildStatusText(r: NoteResult): String {
+        val sign = if (r.cents >= 0) "+" else ""
+        return "${r.name} — ${"%.1f".format(r.frequency)} Hz  $sign${"%.0f".format(r.cents)} cents"
     }
 }
