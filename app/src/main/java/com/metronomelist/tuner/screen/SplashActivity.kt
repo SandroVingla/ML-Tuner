@@ -1,4 +1,4 @@
-package com.metronomelist.tuner.app.screen
+package com.metronomelist.tuner.screen
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -30,7 +30,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.metronomelist.tuner.app.TunerActivity
+import com.metronomelist.tuner.TunerActivity
 import kotlinx.coroutines.delay
 import kotlin.math.cos
 import kotlin.math.sin

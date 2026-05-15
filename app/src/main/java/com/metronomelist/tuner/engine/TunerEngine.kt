@@ -1,4 +1,4 @@
-package com.metronomelist.tuner.app.engine
+package com.metronomelist.tuner.engine
 
 import android.media.AudioFormat
 import android.media.AudioRecord

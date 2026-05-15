@@ -16,7 +16,7 @@
         <activity
             android:name=".screen.SplashActivity"
             android:exported="true"
-            android:screenOrientation="landscape"
+
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@style/Theme.MLTuner">
             <intent-filter>
@@ -29,7 +29,7 @@
         <activity
             android:name=".TunerActivity"
             android:exported="false"
-            android:screenOrientation="landscape"
+
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@style/Theme.MLTuner"/>
 

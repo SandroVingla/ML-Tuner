@@ -1,4 +1,4 @@
-package com.metronomelist.tuner.app.ui
+package com.metronomelist.tuner.ui
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 private val PanelBg  = Color(0xFFCEC9B8)
@@ -45,184 +46,190 @@ fun TunerScreen(vm: TunerViewModel = viewModel()) {
     val state by vm.uiState.collectAsState()
     var showHelp by remember { mutableStateOf(false) }
 
-    // Box externo permite sobrepor a HelpScreen ao conteúdo principal
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val isLandscape = maxWidth > maxHeight
 
-        // ── Conteúdo principal ──────────────────────────────────────────
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF1A1A1A))
-                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout))
-                .padding(8.dp)
-        ) {
-            Row(
+        Box(modifier = Modifier.fillMaxSize()) {
+
+            // ── Conteúdo principal ──────────────────────────────────────────
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(RoundedCornerShape(8.dp))
+                    .fillMaxSize()
                     .background(Color(0xFF1A1A1A))
-                    .border(2.dp, Color(0xFF0E0E0E), RoundedCornerShape(8.dp))
+                    .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout))
+                    .padding(8.dp)
             ) {
-                // ── Painel esquerdo — display âmbar ──
-                Column(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(362f / 304f)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .border(2.dp, Color(0xFF0E0E0E), RoundedCornerShape(6.dp))
-                    ) {
-                        TunerDisplay(cents = state.cents, modifier = Modifier.fillMaxSize())
-                    }
-
-                    // Faixa inferior IN/OUT com setas
-                    val arrowLeftColor = when {
-                        state.note == null     -> Color(0xFF3A3A3A)
-                        state.cents < -5f      -> Color(0xFFFFCC00)
-                        state.cents in -5f..5f -> Color(0xFF30CC10)
-                        else                   -> Color(0xFF3A3A3A)
-                    }
-                    val arrowRightColor = when {
-                        state.note == null     -> Color(0xFF3A3A3A)
-                        state.cents > 5f       -> Color(0xFFFFCC00)
-                        state.cents in -5f..5f -> Color(0xFF30CC10)
-                        else                   -> Color(0xFF3A3A3A)
-                    }
-                    val animLeftColor  by animateColorAsState(arrowLeftColor,  tween(120), label = "arrowL")
-                    val animRightColor by animateColorAsState(arrowRightColor, tween(120), label = "arrowR")
-
+                if (isLandscape) {
+                    // LANDSCAPE — painel esquerdo + direito lado a lado
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFF111111))
-                            .padding(horizontal = 8.dp, vertical = 6.dp),
-                        verticalAlignment     = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF1A1A1A))
+                            .border(2.dp, Color(0xFF0E0E0E), RoundedCornerShape(8.dp))
                     ) {
-                        Canvas(modifier = Modifier.size(22.dp, 18.dp)) {
-                            drawPath(Path().apply {
-                                moveTo(0f, size.height / 2f)
-                                lineTo(size.width, 0f)
-                                lineTo(size.width, size.height)
-                                close()
-                            }, color = animLeftColor)
-                        }
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Canvas(modifier = Modifier.size(22.dp)) {
-                                drawCircle(Color(0xFF0D0D0D), radius = size.minDimension / 2f)
-                                drawCircle(
-                                    Color(0xFF3A3A3A), radius = size.minDimension / 2f,
-                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f)
-                                )
-                                drawCircle(Color(0xFF1A1A1A), radius = size.minDimension / 4f)
-                                drawCircle(Color(0xFF333333), radius = size.minDimension / 8f)
+                        // ── Painel esquerdo — display âmbar ──
+                        Column(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .aspectRatio(362f / 304f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .border(2.dp, Color(0xFF0E0E0E), RoundedCornerShape(6.dp))
+                            ) {
+                                TunerDisplay(cents = state.cents, modifier = Modifier.fillMaxSize())
                             }
-                            Spacer(Modifier.height(2.dp))
-                            Text(
-                                "IN", fontSize = 7.sp, color = Color(0xFF5A5A5A),
-                                letterSpacing = 1.sp, fontWeight = FontWeight.Bold
-                            )
+
+                            val arrowLeftColor = when {
+                                state.note == null     -> Color(0xFF3A3A3A)
+                                state.cents < -5f      -> Color(0xFFFFCC00)
+                                state.cents in -5f..5f -> Color(0xFF30CC10)
+                                else                   -> Color(0xFF3A3A3A)
+                            }
+                            val arrowRightColor = when {
+                                state.note == null     -> Color(0xFF3A3A3A)
+                                state.cents > 5f       -> Color(0xFFFFCC00)
+                                state.cents in -5f..5f -> Color(0xFF30CC10)
+                                else                   -> Color(0xFF3A3A3A)
+                            }
+                            val animLeftColor  by animateColorAsState(arrowLeftColor,  tween(120), label = "arrowL")
+                            val animRightColor by animateColorAsState(arrowRightColor, tween(120), label = "arrowR")
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFF111111))
+                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                                verticalAlignment     = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                Canvas(modifier = Modifier.size(22.dp, 18.dp)) {
+                                    drawPath(Path().apply {
+                                        moveTo(0f, size.height / 2f)
+                                        lineTo(size.width, 0f)
+                                        lineTo(size.width, size.height)
+                                        close()
+                                    }, color = animLeftColor)
+                                }
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Canvas(modifier = Modifier.size(22.dp)) {
+                                        drawCircle(Color(0xFF0D0D0D), radius = size.minDimension / 2f)
+                                        drawCircle(Color(0xFF3A3A3A), radius = size.minDimension / 2f,
+                                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+                                        drawCircle(Color(0xFF1A1A1A), radius = size.minDimension / 4f)
+                                        drawCircle(Color(0xFF333333), radius = size.minDimension / 8f)
+                                    }
+                                    Spacer(Modifier.height(2.dp))
+                                    Text("IN", fontSize = 7.sp, color = Color(0xFF5A5A5A),
+                                        letterSpacing = 1.sp, fontWeight = FontWeight.Bold)
+                                }
+                                Box(modifier = Modifier.width(44.dp).height(16.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(Color(0xFF1A1A1A))
+                                    .border(1.dp, Color(0xFF333333), RoundedCornerShape(2.dp)))
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Canvas(modifier = Modifier.size(22.dp)) {
+                                        drawCircle(Color(0xFF0D0D0D), radius = size.minDimension / 2f)
+                                        drawCircle(Color(0xFF3A3A3A), radius = size.minDimension / 2f,
+                                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+                                        drawCircle(Color(0xFF1A1A1A), radius = size.minDimension / 4f)
+                                        drawCircle(Color(0xFF333333), radius = size.minDimension / 8f)
+                                    }
+                                    Spacer(Modifier.height(2.dp))
+                                    Text("OUT", fontSize = 7.sp, color = Color(0xFF5A5A5A),
+                                        letterSpacing = 1.sp, fontWeight = FontWeight.Bold)
+                                }
+                                Canvas(modifier = Modifier.size(22.dp, 18.dp)) {
+                                    drawPath(Path().apply {
+                                        moveTo(size.width, size.height / 2f)
+                                        lineTo(0f, 0f)
+                                        lineTo(0f, size.height)
+                                        close()
+                                    }, color = animRightColor)
+                                }
+                            }
                         }
 
+                        // ── Painel direito — controles ──
+                        Column(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .weight(0.55f)
+                                .background(PanelBg)
+                        ) {
+                            TopStrip(state, vm, onInfoClick = { showHelp = true })
+                            HorizontalDivider(color = Color(0xFF9A9588), thickness = 1.dp)
+                            NoteStrip(state)
+                            HorizontalDivider(color = Color(0xFF9A9080), thickness = 1.dp)
+                            MainArea(state, vm, modifier = Modifier.weight(1f))
+                        }
+                    }
+                } else {
+                    // PORTRAIT — display âmbar em cima, controles embaixo
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF1A1A1A))
+                            .border(2.dp, Color(0xFF0E0E0E), RoundedCornerShape(8.dp))
+                    ) {
                         Box(
                             modifier = Modifier
-                                .width(44.dp).height(16.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(Color(0xFF1A1A1A))
-                                .border(1.dp, Color(0xFF333333), RoundedCornerShape(2.dp))
-                        )
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Canvas(modifier = Modifier.size(22.dp)) {
-                                drawCircle(Color(0xFF0D0D0D), radius = size.minDimension / 2f)
-                                drawCircle(
-                                    Color(0xFF3A3A3A), radius = size.minDimension / 2f,
-                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f)
-                                )
-                                drawCircle(Color(0xFF1A1A1A), radius = size.minDimension / 4f)
-                                drawCircle(Color(0xFF333333), radius = size.minDimension / 8f)
-                            }
-                            Spacer(Modifier.height(2.dp))
-                            Text(
-                                "OUT", fontSize = 7.sp, color = Color(0xFF5A5A5A),
-                                letterSpacing = 1.sp, fontWeight = FontWeight.Bold
-                            )
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .padding(8.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .border(2.dp, Color(0xFF0E0E0E), RoundedCornerShape(6.dp))
+                        ) {
+                            TunerDisplay(cents = state.cents, modifier = Modifier.fillMaxSize())
                         }
 
-                        Canvas(modifier = Modifier.size(22.dp, 18.dp)) {
-                            drawPath(Path().apply {
-                                moveTo(size.width, size.height / 2f)
-                                lineTo(0f, 0f)
-                                lineTo(0f, size.height)
-                                close()
-                            }, color = animRightColor)
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(PanelBg)
+                        ) {
+                            TopStrip(state, vm, onInfoClick = { showHelp = true })
+                            HorizontalDivider(color = Color(0xFF9A9588), thickness = 1.dp)
+                            NoteStrip(state)
+                            HorizontalDivider(color = Color(0xFF9A9080), thickness = 1.dp)
+                            MainArea(state, vm, modifier = Modifier.wrapContentHeight())
                         }
                     }
                 }
 
-                // ── Painel direito — controles ──
-                Column(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(0.55f)
-                        .background(PanelBg)
-                ) {
-                    TopStrip(state, vm)
-                    HorizontalDivider(color = Color(0xFF9A9588), thickness = 1.dp)
-                    NoteStrip(state)
-                    HorizontalDivider(color = Color(0xFF9A9080), thickness = 1.dp)
-                    MainArea(state, vm, modifier = Modifier.weight(1f))
-                }
+                Text(
+                    text      = state.statusText,
+                    color     = Color(0xFF888888),
+                    fontSize  = 11.sp,
+                    modifier  = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    textAlign = TextAlign.Center
+                )
+
+                if (state.showHzMenu) HzMenu(state, vm)
             }
 
-            Text(
-                text      = state.statusText,
-                color     = Color(0xFF888888),
-                fontSize  = 11.sp,
-                modifier  = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
-                textAlign = TextAlign.Center
-            )
-
-            if (state.showHzMenu) HzMenu(state, vm)
-        }
-
-        // ── Botão ? — abaixo da faixa PITCH/BATT, não conflita com câmera
-        IconButton(
-            onClick  = { showHelp = true },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .windowInsetsPadding(WindowInsets.systemBars)
-                .padding(top = 22.dp, end = 22.dp)
-                .size(28.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF2A1E08))
-        ) {
-            Icon(
-                imageVector        = Icons.Default.Help,
-                contentDescription = "Ajuda",
-                tint               = Color(0xFFD4A820),
-                modifier           = Modifier.size(16.dp)
-            )
-        }
-
-        // ── HelpScreen — sobreposta em tela cheia ──────────────────────
-        if (showHelp) {
-            HelpScreen(onClose = { showHelp = false })
+            if (showHelp) {
+                HelpScreen(onClose = { showHelp = false })
+            }
         }
     }
 }
 
+// ── TopStrip — PITCH + LEDs Hz + BATT + botão i ──────────────────────────────
 @Composable
-private fun TopStrip(state: TunerUiState, vm: TunerViewModel) {
+private fun TopStrip(state: TunerUiState, vm: TunerViewModel, onInfoClick: () -> Unit = {}) {
+    val battColor by animateColorAsState(
+        if (state.isPowered) BattOn else BattOff, tween(300), label = "batt_top"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -233,21 +240,6 @@ private fun TopStrip(state: TunerUiState, vm: TunerViewModel) {
             modifier          = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // ── BATT — lado esquerdo ──
-            val battColor by animateColorAsState(
-                if (state.isPowered) BattOn else BattOff, tween(300), label = "batt"
-            )
-            Box(
-                modifier = Modifier
-                    .size(12.dp).clip(CircleShape)
-                    .background(battColor)
-                    .border(1.dp, Color(0xFF5A4020), CircleShape)
-            )
-            Spacer(Modifier.width(4.dp))
-            Text("BATT.", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = TextDark)
-            Spacer(Modifier.width(8.dp))
-
-            // ── PITCH + LEDs Hz — centro/direita ──
             Text(
                 "PITCH", fontSize = 8.sp, fontWeight = FontWeight.Bold,
                 color = TextDark, letterSpacing = 0.8.sp
@@ -282,6 +274,41 @@ private fun TopStrip(state: TunerUiState, vm: TunerViewModel) {
                         )
                     }
                 }
+            }
+            Spacer(Modifier.width(8.dp))
+            // BATT label + dot
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .border(1.dp, Color(0xFF9A9080), RoundedCornerShape(3.dp))
+                    .padding(horizontal = 5.dp, vertical = 3.dp)
+            ) {
+                Text("BATT.", fontSize = 7.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                Spacer(Modifier.width(4.dp))
+                Box(
+                    modifier = Modifier
+                        .size(10.dp).clip(CircleShape)
+                        .background(battColor)
+                        .border(1.dp, Color(0xFF5A4020), CircleShape)
+                )
+            }
+            Spacer(Modifier.width(6.dp))
+            // Botão i — círculo com borda preta
+            Box(
+                modifier = Modifier
+                    .size(22.dp)
+                    .clip(CircleShape)
+                    .background(PanelBg)
+                    .border(2.dp, Color(0xFF1A1206), CircleShape)
+                    .clickable { onInfoClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text       = "i",
+                    fontSize   = 11.sp,
+                    fontWeight = FontWeight.Black,
+                    color      = TextDark
+                )
             }
         }
     }
@@ -338,6 +365,7 @@ private fun NoteWithLed(note: String, active: Boolean) {
     }
 }
 
+// ── MainArea — botões PITCH/DOWN/UP + PowerSlider + branding ─────────────────
 @Composable
 private fun MainArea(state: TunerUiState, vm: TunerViewModel, modifier: Modifier) {
     Row(
@@ -347,8 +375,7 @@ private fun MainArea(state: TunerUiState, vm: TunerViewModel, modifier: Modifier
         verticalAlignment = Alignment.Bottom
     ) {
         Column(
-            verticalArrangement = Arrangement.Bottom,
-            modifier            = Modifier.fillMaxHeight()
+            verticalArrangement = Arrangement.Bottom
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -365,19 +392,13 @@ private fun MainArea(state: TunerUiState, vm: TunerViewModel, modifier: Modifier
         Column(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.Bottom,
-            modifier            = Modifier
-                .fillMaxHeight()
-                .padding(bottom = 4.dp)
+            modifier            = Modifier.padding(bottom = 4.dp)
         ) {
             Text("CHROMATIC TUNER", fontSize = 7.sp, color = TextMid, letterSpacing = 1.sp)
-            Text(
-                "ML-T1", fontSize = 24.sp, fontWeight = FontWeight.Black,
-                color = TextDark, letterSpacing = (-0.5).sp
-            )
-            Text(
-                "METRONOME LIST", fontSize = 7.sp, fontWeight = FontWeight.Bold,
-                color = TextDark, letterSpacing = 2.sp
-            )
+            Text("ML-T1", fontSize = 24.sp, fontWeight = FontWeight.Black,
+                color = TextDark, letterSpacing = (-0.5).sp)
+            Text("METRONOME LIST", fontSize = 7.sp, fontWeight = FontWeight.Bold,
+                color = TextDark, letterSpacing = 2.sp)
             Text("Digital Processing", fontSize = 6.sp, color = TextMid)
         }
     }
@@ -386,19 +407,14 @@ private fun MainArea(state: TunerUiState, vm: TunerViewModel, modifier: Modifier
 @Composable
 private fun TunerButton(label: String, onClick: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            label, fontSize = 7.sp, fontWeight = FontWeight.Bold,
-            color = TextDark, letterSpacing = 0.5.sp
-        )
+        Text(label, fontSize = 7.sp, fontWeight = FontWeight.Bold,
+            color = TextDark, letterSpacing = 0.5.sp)
         Spacer(Modifier.height(2.dp))
         Box(
             modifier = Modifier
                 .size(44.dp).clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        listOf(Color(0xFF70D0EF), Color(0xFF2596BE), Color(0xFF0F5A7A))
-                    )
-                )
+                .background(Brush.radialGradient(
+                    listOf(Color(0xFF70D0EF), Color(0xFF2596BE), Color(0xFF0F5A7A))))
                 .border(2.dp, BtnDark, CircleShape)
                 .clickable(onClick = onClick)
         )
@@ -431,31 +447,23 @@ private fun PowerSlider(powerMode: PowerMode, onChanged: (PowerMode) -> Unit) {
             contentAlignment = Alignment.CenterStart
         ) {
             Row(modifier = Modifier.fillMaxSize()) {
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()
-                    .clickable { onChanged(PowerMode.OFF) })
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()
-                    .clickable { onChanged(PowerMode.L) })
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()
-                    .clickable { onChanged(PowerMode.H) })
+                Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onChanged(PowerMode.OFF) })
+                Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onChanged(PowerMode.L) })
+                Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onChanged(PowerMode.H) })
             }
             Box(
                 modifier = Modifier
                     .offset(x = animThumb)
                     .width(42.dp).height(22.dp)
                     .clip(RoundedCornerShape(11.dp))
-                    .background(
-                        Brush.radialGradient(
-                            listOf(Color(0xFF60C8E0), Color(0xFF2090B8), Color(0xFF0C4A68))
-                        )
-                    )
+                    .background(Brush.radialGradient(
+                        listOf(Color(0xFF60C8E0), Color(0xFF2090B8), Color(0xFF0C4A68))))
                     .border(1.dp, BtnDark, RoundedCornerShape(11.dp))
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp).clip(CircleShape)
-                        .background(Color(0xFFCC7000))
-                        .align(Alignment.Center)
-                )
+                Box(modifier = Modifier
+                    .size(10.dp).clip(CircleShape)
+                    .background(Color(0xFFCC7000))
+                    .align(Alignment.Center))
             }
         }
         Row(
@@ -478,11 +486,9 @@ private fun HzMenu(state: TunerUiState, vm: TunerViewModel) {
         tonalElevation = 2.dp
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
-            Text(
-                "FREQUÊNCIA DE REFERÊNCIA (A4)",
+            Text("FREQUÊNCIA DE REFERÊNCIA (A4)",
                 fontSize = 10.sp, fontWeight = FontWeight.Bold,
-                color = Color(0xFF2A1E08), letterSpacing = 1.sp
-            )
+                color = Color(0xFF2A1E08), letterSpacing = 1.sp)
             Spacer(Modifier.height(8.dp))
             Row(
                 modifier              = Modifier.fillMaxWidth(),
@@ -500,14 +506,10 @@ private fun HzMenu(state: TunerUiState, vm: TunerViewModel) {
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                "$hz Hz", fontSize = 10.sp, fontWeight = FontWeight.Bold,
-                                color = if (isActive) Color(0xFFE8D890) else Color(0xFF1A1008)
-                            )
-                            Text(
-                                hzLabel(hz), fontSize = 7.sp,
-                                color = if (isActive) Color(0xFFA09050) else Color(0xFF5A4820)
-                            )
+                            Text("$hz Hz", fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                                color = if (isActive) Color(0xFFE8D890) else Color(0xFF1A1008))
+                            Text(hzLabel(hz), fontSize = 7.sp,
+                                color = if (isActive) Color(0xFFA09050) else Color(0xFF5A4820))
                         }
                     }
                 }

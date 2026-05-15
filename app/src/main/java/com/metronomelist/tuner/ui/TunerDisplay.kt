@@ -1,4 +1,4 @@
-package com.metronomelist.tuner.app.ui
+package com.metronomelist.tuner.ui
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring

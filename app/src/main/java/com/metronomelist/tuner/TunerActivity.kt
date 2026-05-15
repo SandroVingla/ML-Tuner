@@ -1,4 +1,4 @@
-package com.metronomelist.tuner.app
+package com.metronomelist.tuner
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -12,7 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import com.metronomelist.tuner.app.ui.TunerScreen
+import com.metronomelist.tuner.ui.TunerScreen
 
 class TunerActivity : ComponentActivity() {
 
